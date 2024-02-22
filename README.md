@@ -1,4 +1,6 @@
-# Compilerbau - SPL Compiler
+# Compilerbau - SPL Compiler 
+Eine Software-Entwicklungsprojekt mit dem Ziel, für die einfache imperative Programmiersprache SPL(Simple Programming Language) einen Compiler für die RISC-Maschine ECO-32 zu entwickeln.
+Sprache:Java
 
 ## Getting started
 

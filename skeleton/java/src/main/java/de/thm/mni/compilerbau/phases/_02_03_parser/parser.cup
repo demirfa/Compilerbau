@@ -1,0 +1,136 @@
+package de.thm.mni.compilerbau.phases._02_03_parser;
+
+import java.util.List;
+import java.util.LinkedList;
+import java_cup.runtime.*;
+import de.thm.mni.compilerbau.phases._01_scanner.Scanner;
+import de.thm.mni.compilerbau.absyn.*;
+import de.thm.mni.compilerbau.table.Identifier;
+import de.thm.mni.compilerbau.utils.SplError;
+import de.thm.mni.compilerbau.CommandLineOptions;
+
+parser code {:
+  public CommandLineOptions options = null;
+
+  public void syntax_error(Symbol currentToken) {
+    throw SplError.SyntaxError(new Position(currentToken.left, currentToken.right), ((Scanner)getScanner()).yytext());
+  }
+  
+  /**
+   * @return An empty list. (Uses LinkedList)
+   */
+  public static <E> List<E> nil() {
+      return new LinkedList<E>();
+  }
+  
+  /**
+   * Constructs a list from a head and a tail without modifying the tail (Uses LinkedList).
+   * Use this as a helper if you don't want to deal with constructing lists manually.
+   *
+   * @param head The head of the list
+   * @param tail The tail of the list
+   * @return A list containing the head element and all elements of tail
+   */
+  public static <E> List<E> cons(E head, List<E> tail) {
+    List<E> copy = new LinkedList(tail);
+    copy.add(0, head);
+    return copy;
+  }
+:}
+
+/* Terminals/Tokens */
+terminal LBRACK, RBRACK, LPAREN, RPAREN, LCURL, RCURL; //Braces, parenthesis, brackets
+terminal LT, LE, GT, GE, NE, EQ; //Comparison operators
+terminal PLUS, MINUS, STAR, SLASH; //Arithmetic operators
+terminal ASGN, COMMA, COLON, SEMIC; //Other delimiters
+terminal TYPE, PROC, ARRAY, OF, REF, VAR, IF, ELSE, WHILE; //Keywords
+
+terminal Identifier IDENT; //Identifiers
+terminal Integer INTLIT; //Integer literals
+
+
+/* Non-terminals */
+non terminal program;
+non terminal assignment;
+non terminal call_statement;
+non terminal compound_statement;
+non terminal empty_statement;
+non terminal expression,bedingung,term,factor,vorzeichen;
+non terminal notEmptyParameterList,parameter_list;
+non terminal expression_list,not_empty_list;
+non terminal deklaration;
+non terminal deklaration_list;
+non terminal if_statement,if_statements;
+non terminal variable;
+non terminal parameter;
+non terminal procedur_deklaration;
+non terminal statement;
+non terminal statements;
+non terminal type_deklaration;
+non terminal typ;
+non terminal variable_deklaration;
+non terminal variable_deklarations;
+non terminal while_statement;
+
+//PARSE TEIL
+//TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+start with program;
+program::= INTLIT;
+program::= deklaration_list;
+deklaration_list::= deklaration | /*empty*/;
+
+deklaration::=type_deklaration|procedur_deklaration;
+
+//TYPE DEKLARATION
+type_deklaration::=TYPE IDENT EQ typ SEMIC;
+typ::=IDENT|ARRAY LBRACK INTLIT RBRACK OF typ;
+
+//PROZEDUR DEKLARATION
+procedur_deklaration::=PROC IDENT LPAREN parameter_list RPAREN LCURL variable_deklarations statements RCURL;
+
+parameter_list::=notEmptyParameterList| /*empty*/;
+
+notEmptyParameterList::=parameter COMMA notEmptyParameterList|parameter;
+
+parameter::=IDENT COLON typ|REF IDENT COLON typ;
+
+variable_deklarations::=variable_deklaration variable_deklarations|/*empty*/;
+
+variable_deklaration::=VAR IDENT COLON typ SEMIC;
+
+statements ::= statement statements| /*empty*/;
+
+statement::=assignment|while_statement|if_statements|if_statement|compound_statement|call_statement|SEMIC;
+
+assignment::= variable ASGN expression SEMIC;
+
+while_statement::= WHILE LPAREN bedingung RPAREN statement;
+
+if_statement::=IF LPAREN bedingung RPAREN statement;
+
+if_statements::=IF LPAREN bedingung RPAREN statement ELSE statement;
+
+compound_statement::= LCURL statements RCURL;
+
+bedingung::= expression EQ expression
+|expression LT expression
+|expression LE expression
+|expression GT expression
+|expression GE expression
+|expression NE expression;
+
+expression::=expression PLUS term|expression MINUS term|term;
+
+term::= term STAR vorzeichen|term SLASH vorzeichen|vorzeichen;
+
+factor::=variable | INTLIT |LPAREN expression RPAREN;
+
+variable::=IDENT |variable LBRACK expression RBRACK;
+
+vorzeichen::=factor;
+call_statement::=IDENT LPAREN expression_list RPAREN SEMIC;
+
+expression_list::= /*empty*/ |not_empty_list;
+
+not_empty_list::= expression COMMA not_empty_list | expression;
+EmptyStatement::=SEMIC:empty;

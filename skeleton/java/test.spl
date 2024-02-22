@@ -1,0 +1,20 @@
+proc fakultet(n:int,ref ergebnis:int){
+    var fak:int;
+    fak:=5;
+    if(n=5){
+    fak:=fak;
+}
+else {
+    while(n>1){
+    fak:=fak*(n+3);
+    n:=n-1;
+}
+}
+    ergebnis:=fak;}
+    proc main(){
+    var zahl:int;
+    var result:int;
+    zahl:=5;
+    fakultet(zahl,result);
+    printi(result);
+}
